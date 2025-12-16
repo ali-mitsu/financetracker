@@ -1,0 +1,1120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FamilyFinance - Collaborative Budget Platform</title>
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <style>
+    .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+    .card-shadow { box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1); }
+    .pulse-dot { animation: pulse 2s infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+    .progress-bar { transition: width 0.5s ease-in-out; }
+  </style>
+</head>
+
+<body class="bg-gray-50 min-h-screen">
+  <div id="app">
+    <!-- Header -->
+    <header class="gradient-bg text-white py-4 px-6 shadow-lg">
+      <div class="max-w-7xl mx-auto flex justify-between items-center">
+        <div class="flex items-center space-x-3">
+          <svg class="w-10 h-10" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+          </svg>
+          <h1 class="text-2xl font-bold">FamilyFinance</h1>
+        </div>
+
+        <div class="flex items-center space-x-4">
+          <div class="flex items-center space-x-2">
+            <span class="pulse-dot w-2 h-2 bg-green-400 rounded-full"></span>
+            <span class="text-sm">Live Sync</span>
+          </div>
+
+          <div id="currentUser" class="flex items-center space-x-2 bg-white/20 rounded-full px-4 py-2">
+            <div id="userAvatar" class="w-8 h-8 rounded-full bg-white/30 flex items-center justify-center font-bold overflow-hidden"></div>
+            <span id="userName" class="font-medium"></span>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-6 py-8">
+      <!-- Family Members Selection -->
+      <div class="mb-8">
+        <h2 class="text-lg font-semibold text-gray-700 mb-3">Switch Member</h2>
+        <div id="familyMembers" class="flex flex-wrap gap-3"></div>
+      </div>
+
+      <!-- Dashboard Stats -->
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div class="bg-white rounded-2xl p-6 card-shadow">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-gray-500 text-sm">Total Balance</p>
+              <p id="totalBalance" class="text-3xl font-bold text-gray-800">$0.00</p>
+            </div>
+            <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+              <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-2xl p-6 card-shadow">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-gray-500 text-sm">Monthly Income</p>
+              <p id="monthlyIncome" class="text-3xl font-bold text-green-600">$0.00</p>
+            </div>
+            <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+              <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 11l5-5m0 0l5 5m-5-5v12"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-2xl p-6 card-shadow">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-gray-500 text-sm">Monthly Expenses</p>
+              <p id="monthlyExpenses" class="text-3xl font-bold text-red-600">$0.00</p>
+            </div>
+            <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
+              <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 13l-5 5m0 0l-5-5m5 5V6"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-2xl p-6 card-shadow">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-gray-500 text-sm">Goals Progress</p>
+              <p id="goalsProgress" class="text-3xl font-bold text-purple-600">0%</p>
+            </div>
+            <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
+              <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Grid -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Left: Transactions -->
+        <div class="lg:col-span-2 space-y-6">
+
+          <!-- Add Transaction -->
+          <div class="bg-white rounded-2xl p-6 card-shadow">
+            <h2 class="text-xl font-bold text-gray-800 mb-4">Add Transaction</h2>
+
+            <form id="transactionForm" class="space-y-4">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">Type</label>
+                  <select id="transactionType" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                    <option value="expense">Expense</option>
+                    <option value="income">Income</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">Amount</label>
+                  <input type="number" id="transactionAmount" step="0.01" placeholder="0.00"
+                         class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent" required>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                  <select id="transactionCategory" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"></select>
+                </div>
+
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                  <input type="text" id="transactionDescription" placeholder="Enter description"
+                         class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent" required>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">Date</label>
+                  <input type="date" id="transactionDate"
+                         class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent" required>
+                </div>
+
+                <div class="flex items-center gap-3 pt-6">
+                  <input type="checkbox" id="transactionRepeat" class="h-5 w-5 accent-purple-600">
+                  <label for="transactionRepeat" class="text-sm font-medium text-gray-700">
+                    Repeat monthly
+                  </label>
+                </div>
+              </div>
+
+              <!-- Repeat Options -->
+              <div id="repeatOptions" class="hidden bg-purple-50 border border-purple-100 rounded-xl p-4">
+                <p class="text-sm text-purple-800 font-semibold mb-2">Recurring schedule</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Starts on</label>
+                    <input type="date" id="repeatStartDate"
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                    <p class="text-xs text-gray-500 mt-1">We’ll auto-add it monthly on this day.</p>
+                  </div>
+                  <div class="flex items-center">
+                    <div class="text-sm text-gray-700">
+                      <div class="font-medium">Frequency</div>
+                      <div class="text-gray-600">Monthly</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <button type="submit" class="w-full gradient-bg text-white py-3 rounded-lg font-semibold hover:opacity-90 transition-opacity">
+                Add Transaction
+              </button>
+            </form>
+          </div>
+
+          <!-- Recent Transactions -->
+          <div class="bg-white rounded-2xl p-6 card-shadow">
+            <div class="flex justify-between items-center mb-4">
+              <h2 class="text-xl font-bold text-gray-800">Recent Transactions</h2>
+              <select id="transactionFilter" class="px-3 py-1 border border-gray-300 rounded-lg text-sm">
+                <option value="all">All Members</option>
+              </select>
+            </div>
+            <div id="transactionsList" class="space-y-3 max-h-96 overflow-y-auto"></div>
+          </div>
+        </div>
+
+        <!-- Right: Goals + Activity + Admin -->
+        <div class="space-y-6">
+
+          <!-- Goals -->
+          <div class="bg-white rounded-2xl p-6 card-shadow">
+            <div class="flex justify-between items-center mb-4">
+              <h2 class="text-xl font-bold text-gray-800">Family Goals</h2>
+              <button onclick="openGoalModal()" class="text-purple-600 hover:text-purple-800">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                </svg>
+              </button>
+            </div>
+            <div id="goalsList" class="space-y-4"></div>
+          </div>
+
+          <!-- Activity -->
+          <div class="bg-white rounded-2xl p-6 card-shadow">
+            <h2 class="text-xl font-bold text-gray-800 mb-4">Activity Feed</h2>
+            <div id="activityFeed" class="space-y-3 max-h-80 overflow-y-auto"></div>
+          </div>
+
+          <!-- Category Breakdown -->
+          <div class="bg-white rounded-2xl p-6 card-shadow">
+            <h2 class="text-xl font-bold text-gray-800 mb-4">Spending by Category</h2>
+            <div id="categoryBreakdown" class="space-y-3"></div>
+          </div>
+
+          <!-- Manage Family -->
+          <div class="bg-white rounded-2xl p-6 card-shadow">
+            <div class="flex items-center justify-between mb-3">
+              <h2 class="text-xl font-bold text-gray-800">Manage Family</h2>
+              <button id="addMemberBtn" class="text-purple-600 hover:text-purple-800 text-sm font-semibold">+ Add</button>
+            </div>
+            <div class="text-sm text-gray-500 mb-3">Use an image URL if you want a photo. Otherwise it shows initials.</div>
+            <div id="membersEditor" class="space-y-3"></div>
+          </div>
+
+          <!-- Manage Categories -->
+          <div class="bg-white rounded-2xl p-6 card-shadow">
+            <div class="flex items-center justify-between mb-3">
+              <h2 class="text-xl font-bold text-gray-800">Manage Categories</h2>
+              <button id="addCategoryBtn" class="text-purple-600 hover:text-purple-800 text-sm font-semibold">+ Add</button>
+            </div>
+            <div id="categoriesEditor" class="space-y-3"></div>
+          </div>
+
+          <!-- Recurring -->
+          <div class="bg-white rounded-2xl p-6 card-shadow">
+            <h2 class="text-xl font-bold text-gray-800 mb-2">Recurring Transactions</h2>
+            <div class="text-sm text-gray-500 mb-3">These are auto-added monthly when due.</div>
+            <div id="recurringList" class="space-y-3"></div>
+          </div>
+
+        </div>
+      </div>
+    </main>
+
+    <!-- Goal Modal -->
+    <div id="goalModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
+      <div class="bg-white rounded-2xl p-6 w-full max-w-md mx-4 card-shadow">
+        <h3 class="text-xl font-bold text-gray-800 mb-4">Add Financial Goal</h3>
+        <form id="goalForm" class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Goal Name</label>
+            <input type="text" id="goalName" placeholder="e.g., Family Vacation"
+                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent" required>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Target Amount</label>
+            <input type="number" id="goalTarget" step="0.01" placeholder="0.00"
+                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent" required>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Icon</label>
+            <select id="goalIcon" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+              <option value="✈️">Vacation</option>
+              <option value="🏠">Home</option>
+              <option value="🚗">Car</option>
+              <option value="🎓">Education</option>
+              <option value="💍">Wedding</option>
+              <option value="🏥">Emergency</option>
+              <option value="🎁">Gift</option>
+              <option value="💰">Savings</option>
+            </select>
+          </div>
+          <div class="flex space-x-3">
+            <button type="button" onclick="closeGoalModal()"
+                    class="flex-1 py-2 border border-gray-300 rounded-lg font-semibold text-gray-700 hover:bg-gray-50">
+              Cancel
+            </button>
+            <button type="submit" class="flex-1 gradient-bg text-white py-2 rounded-lg font-semibold hover:opacity-90">
+              Add Goal
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Contribute Modal -->
+    <div id="contributeModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
+      <div class="bg-white rounded-2xl p-6 w-full max-w-md mx-4 card-shadow">
+        <h3 class="text-xl font-bold text-gray-800 mb-4">Contribute to Goal</h3>
+        <form id="contributeForm" class="space-y-4">
+          <input type="hidden" id="contributeGoalId">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Amount</label>
+            <input type="number" id="contributeAmount" step="0.01" placeholder="0.00"
+                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent" required>
+          </div>
+          <div class="flex space-x-3">
+            <button type="button" onclick="closeContributeModal()"
+                    class="flex-1 py-2 border border-gray-300 rounded-lg font-semibold text-gray-700 hover:bg-gray-50">
+              Cancel
+            </button>
+            <button type="submit" class="flex-1 gradient-bg text-white py-2 rounded-lg font-semibold hover:opacity-90">
+              Contribute
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Toast -->
+    <div id="toast" class="fixed bottom-4 right-4 bg-gray-800 text-white px-6 py-3 rounded-lg shadow-lg transform translate-y-20 opacity-0 transition-all duration-300">
+      <span id="toastMessage"></span>
+    </div>
+  </div>
+
+  <script>
+    // -------------------------
+    // Data model (v2)
+    // -------------------------
+    let familyData = {
+      version: 2,
+      members: [
+        { id: 1, name: 'You', image: '' },
+        { id: 2, name: 'Partner', image: '' }
+      ],
+      categories: [
+        { id: 'groceries', name: 'Groceries' },
+        { id: 'utilities', name: 'Utilities' },
+        { id: 'entertainment', name: 'Entertainment' },
+        { id: 'transport', name: 'Transport' },
+        { id: 'dining', name: 'Dining' },
+        { id: 'shopping', name: 'Shopping' },
+        { id: 'health', name: 'Health' },
+        { id: 'salary', name: 'Salary' },
+        { id: 'freelance', name: 'Freelance' },
+        { id: 'other', name: 'Other' }
+      ],
+      transactions: [],
+      goals: [],
+      activities: [],
+      recurring: [] // recurring templates
+    };
+
+    let currentUser = familyData.members[0];
+
+    // -------------------------
+    // Storage
+    // -------------------------
+    function saveToStorage() {
+      localStorage.setItem('familyBudgetData', JSON.stringify(familyData));
+    }
+
+    function loadFromStorage() {
+      const saved = localStorage.getItem('familyBudgetData');
+      if (!saved) return;
+
+      const parsed = JSON.parse(saved);
+
+      // Basic merge to avoid losing new fields if old data exists
+      familyData = {
+        ...familyData,
+        ...parsed,
+        members: parsed.members ?? familyData.members,
+        categories: parsed.categories ?? familyData.categories,
+        transactions: parsed.transactions ?? [],
+        goals: parsed.goals ?? [],
+        activities: parsed.activities ?? [],
+        recurring: parsed.recurring ?? []
+      };
+
+      // Ensure at least 2 members
+      if (!familyData.members || familyData.members.length < 2) {
+        familyData.members = [
+          { id: 1, name: 'You', image: '' },
+          { id: 2, name: 'Partner', image: '' }
+        ];
+      }
+    }
+
+    // -------------------------
+    // Helpers
+    // -------------------------
+    function showToast(message) {
+      const toast = document.getElementById('toast');
+      document.getElementById('toastMessage').textContent = message;
+      toast.classList.remove('translate-y-20', 'opacity-0');
+      setTimeout(() => toast.classList.add('translate-y-20', 'opacity-0'), 3000);
+    }
+
+    function addActivity(message) {
+      familyData.activities.push({ message, date: new Date().toISOString() });
+      if (familyData.activities.length > 80) familyData.activities = familyData.activities.slice(-80);
+    }
+
+    function formatDateShort(iso) {
+      const d = new Date(iso);
+      return d.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+    }
+
+    function initials(name) {
+      const parts = (name || '').trim().split(/\s+/).filter(Boolean);
+      if (parts.length === 0) return '?';
+      if (parts.length === 1) return parts[0].slice(0, 1).toUpperCase();
+      return (parts[0].slice(0,1) + parts[parts.length - 1].slice(0,1)).toUpperCase();
+    }
+
+    function monthAddKeepDay(date, dayOfMonth) {
+      const d = new Date(date);
+      const year = d.getFullYear();
+      const month = d.getMonth();
+      const nextMonth = month + 1;
+
+      const candidate = new Date(year, nextMonth, 1);
+      const lastDay = new Date(candidate.getFullYear(), candidate.getMonth() + 1, 0).getDate();
+      const day = Math.min(dayOfMonth, lastDay);
+
+      return new Date(candidate.getFullYear(), candidate.getMonth(), day, 12, 0, 0, 0);
+    }
+
+    function categoryName(categoryId) {
+      const c = familyData.categories.find(x => x.id === categoryId);
+      return c ? c.name : 'Unknown';
+    }
+
+    // -------------------------
+    // UI rendering
+    // -------------------------
+    function updateCurrentUser() {
+      const avatar = document.getElementById('userAvatar');
+      const name = document.getElementById('userName');
+      name.textContent = currentUser.name;
+
+      if (currentUser.image) {
+        avatar.innerHTML = `<img src="${currentUser.image}" class="w-full h-full rounded-full object-cover" />`;
+      } else {
+        avatar.textContent = initials(currentUser.name);
+      }
+    }
+
+    function renderFamilyMembers() {
+      const container = document.getElementById('familyMembers');
+      container.innerHTML = familyData.members.map(member => `
+        <button onclick="switchUser(${member.id})"
+          class="flex items-center space-x-2 px-4 py-2 rounded-full transition-all ${
+            currentUser.id === member.id
+              ? 'bg-purple-600 text-white shadow-lg scale-105'
+              : 'bg-white text-gray-700 hover:bg-gray-100 shadow'
+          }">
+          <span class="w-8 h-8 rounded-full bg-gray-200 overflow-hidden flex items-center justify-center font-bold">
+            ${member.image
+              ? `<img src="${member.image}" class="w-full h-full rounded-full object-cover" />`
+              : initials(member.name)
+            }
+          </span>
+          <span class="font-medium">${member.name}</span>
+        </button>
+      `).join('');
+    }
+
+    function switchUser(memberId) {
+      const found = familyData.members.find(m => m.id === memberId);
+      if (!found) return;
+      currentUser = found;
+      updateCurrentUser();
+      renderFamilyMembers();
+      showToast(`Switched to ${currentUser.name}`);
+    }
+
+    function populateFilterDropdown() {
+      const filter = document.getElementById('transactionFilter');
+      filter.innerHTML = '<option value="all">All Members</option>' +
+        familyData.members.map(m => `<option value="${m.id}">${m.name}</option>`).join('');
+    }
+
+    function populateCategoryDropdown() {
+      const select = document.getElementById('transactionCategory');
+      select.innerHTML = familyData.categories
+        .map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+    }
+
+    function renderTransactions() {
+      const container = document.getElementById('transactionsList');
+      const filter = document.getElementById('transactionFilter').value;
+
+      let filtered = [...familyData.transactions];
+      if (filter !== 'all') filtered = filtered.filter(t => t.memberId === parseInt(filter));
+
+      filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+      if (filtered.length === 0) {
+        container.innerHTML = '<p class="text-gray-500 text-center py-8">No transactions yet. Add your first one!</p>';
+        return;
+      }
+
+      container.innerHTML = filtered.map(transaction => {
+        const member = familyData.members.find(m => m.id === transaction.memberId);
+        const isExpense = transaction.type === 'expense';
+
+        const memberChip = member ? `
+          <span class="inline-flex items-center gap-2">
+            <span class="w-6 h-6 rounded-full bg-gray-200 overflow-hidden flex items-center justify-center text-xs font-bold">
+              ${member.image ? `<img src="${member.image}" class="w-full h-full rounded-full object-cover" />` : initials(member.name)}
+            </span>
+            <span>${member.name}</span>
+          </span>
+        ` : '';
+
+        return `
+          <div class="flex items-center justify-between p-3 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
+            <div class="flex items-center space-x-3">
+              <div class="w-10 h-10 rounded-full ${isExpense ? 'bg-red-100' : 'bg-green-100'} flex items-center justify-center">
+                <span class="text-sm font-bold text-gray-700">${(categoryName(transaction.categoryId) || 'C').slice(0,1).toUpperCase()}</span>
+              </div>
+              <div>
+                <p class="font-medium text-gray-800">${transaction.description}</p>
+                <p class="text-sm text-gray-500">
+                  ${memberChip}
+                  <span class="mx-2">•</span>
+                  <span>${categoryName(transaction.categoryId)}</span>
+                  <span class="mx-2">•</span>
+                  <span>${formatDateShort(transaction.date)}</span>
+                </p>
+              </div>
+            </div>
+            <div class="flex items-center space-x-3">
+              <span class="font-bold ${isExpense ? 'text-red-600' : 'text-green-600'}">
+                ${isExpense ? '-' : '+'}$${transaction.amount.toFixed(2)}
+              </span>
+              <button onclick="deleteTransaction(${transaction.id})" class="text-gray-400 hover:text-red-500" title="Delete">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function deleteTransaction(id) {
+      const t = familyData.transactions.find(x => x.id === id);
+      if (!t) return;
+      familyData.transactions = familyData.transactions.filter(x => x.id !== id);
+      addActivity(`${currentUser.name} deleted a transaction: $${t.amount.toFixed(2)} (${t.description})`);
+      saveToStorage();
+      renderAll();
+      showToast('Transaction deleted');
+    }
+
+    function renderGoals() {
+      const container = document.getElementById('goalsList');
+
+      if (familyData.goals.length === 0) {
+        container.innerHTML = '<p class="text-gray-500 text-center py-4">No goals yet. Create your first family goal!</p>';
+        return;
+      }
+
+      container.innerHTML = familyData.goals.map(goal => {
+        const percentage = Math.min((goal.current / goal.target) * 100, 100);
+        return `
+          <div class="bg-gray-50 rounded-xl p-4">
+            <div class="flex items-center justify-between mb-2">
+              <div class="flex items-center space-x-2">
+                <span class="text-2xl">${goal.icon}</span>
+                <span class="font-semibold text-gray-800">${goal.name}</span>
+              </div>
+              <button onclick="deleteGoal(${goal.id})" class="text-gray-400 hover:text-red-500" title="Delete">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+              </button>
+            </div>
+            <div class="w-full bg-gray-200 rounded-full h-3 mb-2">
+              <div class="progress-bar h-3 rounded-full gradient-bg" style="width: ${percentage}%"></div>
+            </div>
+            <div class="flex justify-between text-sm">
+              <span class="text-gray-600">$${goal.current.toFixed(2)} / $${goal.target.toFixed(2)}</span>
+              <span class="font-medium text-purple-600">${percentage.toFixed(0)}%</span>
+            </div>
+            <button onclick="openContributeModal(${goal.id})" class="w-full mt-3 py-2 text-sm font-medium text-purple-600 bg-purple-100 rounded-lg hover:bg-purple-200 transition-colors">
+              + Contribute
+            </button>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function deleteGoal(id) {
+      const goal = familyData.goals.find(g => g.id === id);
+      if (!goal) return;
+      familyData.goals = familyData.goals.filter(g => g.id !== id);
+      addActivity(`${currentUser.name} removed goal: ${goal.name}`);
+      saveToStorage();
+      renderAll();
+      showToast('Goal deleted');
+    }
+
+    function renderActivityFeed() {
+      const container = document.getElementById('activityFeed');
+
+      if (familyData.activities.length === 0) {
+        container.innerHTML = '<p class="text-gray-500 text-center py-4">No recent activity</p>';
+        return;
+      }
+
+      const recent = familyData.activities.slice(-10).reverse();
+      container.innerHTML = recent.map(a => `
+        <div class="flex items-start space-x-3 text-sm">
+          <div class="w-2 h-2 mt-2 bg-purple-400 rounded-full"></div>
+          <div>
+            <p class="text-gray-700">${a.message}</p>
+            <p class="text-gray-400 text-xs">${formatDateShort(a.date)}</p>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function renderCategoryBreakdown() {
+      const container = document.getElementById('categoryBreakdown');
+      const expenses = familyData.transactions.filter(t => t.type === 'expense');
+
+      if (expenses.length === 0) {
+        container.innerHTML = '<p class="text-gray-500 text-center py-4">No expenses to show</p>';
+        return;
+      }
+
+      const totals = {};
+      expenses.forEach(t => { totals[t.categoryId] = (totals[t.categoryId] || 0) + t.amount; });
+
+      const totalExpenses = Object.values(totals).reduce((a, b) => a + b, 0);
+      const sorted = Object.entries(totals).sort((a, b) => b[1] - a[1]);
+
+      const bars = ['bg-red-500', 'bg-orange-500', 'bg-yellow-500', 'bg-green-500', 'bg-blue-500', 'bg-purple-500', 'bg-pink-500'];
+
+      container.innerHTML = sorted.map(([catId, amount], idx) => {
+        const pct = (amount / totalExpenses) * 100;
+        return `
+          <div class="flex items-center space-x-3">
+            <span class="text-sm font-bold w-7 h-7 rounded-full bg-gray-200 flex items-center justify-center">${categoryName(catId).slice(0,1).toUpperCase()}</span>
+            <div class="flex-1">
+              <div class="flex justify-between text-sm mb-1">
+                <span class="text-gray-700">${categoryName(catId)}</span>
+                <span class="font-medium text-gray-800">$${amount.toFixed(2)}</span>
+              </div>
+              <div class="w-full bg-gray-200 rounded-full h-2">
+                <div class="h-2 rounded-full ${bars[idx % bars.length]}" style="width: ${pct}%"></div>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function updateStats() {
+      const now = new Date();
+      const currentMonth = now.getMonth();
+      const currentYear = now.getFullYear();
+
+      const monthly = familyData.transactions.filter(t => {
+        const d = new Date(t.date);
+        return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
+      });
+
+      const income = monthly.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
+      const expenses = monthly.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
+      const balance = income - expenses;
+
+      document.getElementById('monthlyIncome').textContent = `$${income.toFixed(2)}`;
+      document.getElementById('monthlyExpenses').textContent = `$${expenses.toFixed(2)}`;
+      document.getElementById('totalBalance').textContent = `$${balance.toFixed(2)}`;
+      document.getElementById('totalBalance').className = `text-3xl font-bold ${balance >= 0 ? 'text-gray-800' : 'text-red-600'}`;
+
+      if (familyData.goals.length > 0) {
+        const totalGoalsProgress = familyData.goals.reduce((sum, g) => sum + (g.current / g.target), 0);
+        const avg = (totalGoalsProgress / familyData.goals.length) * 100;
+        document.getElementById('goalsProgress').textContent = `${avg.toFixed(0)}%`;
+      } else {
+        document.getElementById('goalsProgress').textContent = `0%`;
+      }
+    }
+
+    // -------------------------
+    // Editors (Members / Categories / Recurring)
+    // -------------------------
+    function renderMembersEditor() {
+      const container = document.getElementById('membersEditor');
+
+      container.innerHTML = familyData.members.map(m => `
+        <div class="bg-gray-50 rounded-xl p-3">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-full bg-gray-200 overflow-hidden flex items-center justify-center font-bold">
+              ${m.image ? `<img src="${m.image}" class="w-full h-full object-cover" />` : initials(m.name)}
+            </div>
+            <div class="flex-1 grid grid-cols-1 md:grid-cols-2 gap-2">
+              <input class="px-3 py-2 border border-gray-300 rounded-lg text-sm" value="${escapeHtml(m.name)}"
+                     placeholder="Name" oninput="editMemberName(${m.id}, this.value)">
+              <input class="px-3 py-2 border border-gray-300 rounded-lg text-sm" value="${escapeHtml(m.image || '')}"
+                     placeholder="Image URL (optional)" oninput="editMemberImage(${m.id}, this.value)">
+            </div>
+            <button class="text-gray-400 hover:text-red-500" title="Remove" onclick="removeMember(${m.id})">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function addMember() {
+      const nextId = Math.max(...familyData.members.map(m => m.id), 0) + 1;
+      familyData.members.push({ id: nextId, name: 'New Member', image: '' });
+      addActivity(`${currentUser.name} added a family member`);
+      saveToStorage();
+      renderAll();
+      showToast('Member added');
+    }
+
+    function removeMember(id) {
+      if (familyData.members.length <= 2) {
+        showToast('Keep at least 2 members');
+        return;
+      }
+      familyData.members = familyData.members.filter(m => m.id !== id);
+      if (!familyData.members.find(m => m.id === currentUser.id)) {
+        currentUser = familyData.members[0];
+      }
+      addActivity(`${currentUser.name} removed a family member`);
+      saveToStorage();
+      renderAll();
+      showToast('Member removed');
+    }
+
+    function editMemberName(id, value) {
+      const m = familyData.members.find(x => x.id === id);
+      if (!m) return;
+      m.name = value.trim() || 'Member';
+      saveToStorage();
+      renderFamilyMembers();
+      populateFilterDropdown();
+      updateCurrentUser();
+    }
+
+    function editMemberImage(id, value) {
+      const m = familyData.members.find(x => x.id === id);
+      if (!m) return;
+      m.image = value.trim();
+      saveToStorage();
+      renderFamilyMembers();
+      renderMembersEditor();
+      updateCurrentUser();
+    }
+
+    function renderCategoriesEditor() {
+      const container = document.getElementById('categoriesEditor');
+
+      container.innerHTML = familyData.categories.map(c => `
+        <div class="bg-gray-50 rounded-xl p-3 flex items-center gap-2">
+          <input class="px-3 py-2 border border-gray-300 rounded-lg text-sm flex-1"
+                 value="${escapeHtml(c.name)}" oninput="editCategoryName('${c.id}', this.value)">
+          <button class="text-gray-400 hover:text-red-500" title="Remove" onclick="removeCategory('${c.id}')">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+          </button>
+        </div>
+      `).join('');
+    }
+
+    function slugify(str) {
+      return (str || '')
+        .toLowerCase()
+        .trim()
+        .replace(/[^\w\s-]/g, '')
+        .replace(/\s+/g, '-')
+        .replace(/-+/g, '-')
+        .slice(0, 40) || ('cat-' + Date.now());
+    }
+
+    function addCategory() {
+      const name = prompt('New category name?');
+      if (!name) return;
+      const id = slugify(name);
+      if (familyData.categories.some(c => c.id === id)) {
+        showToast('That category already exists');
+        return;
+      }
+      familyData.categories.push({ id, name: name.trim() });
+      addActivity(`${currentUser.name} added category: ${name.trim()}`);
+      saveToStorage();
+      renderAll();
+      showToast('Category added');
+    }
+
+    function editCategoryName(id, value) {
+      const c = familyData.categories.find(x => x.id === id);
+      if (!c) return;
+      c.name = value.trim() || 'Category';
+      saveToStorage();
+      populateCategoryDropdown();
+      renderCategoryBreakdown();
+    }
+
+    function removeCategory(id) {
+      if (familyData.categories.length <= 3) {
+        showToast('Keep at least a few categories');
+        return;
+      }
+      // Re-map any transactions using this category to "other"
+      const fallback = familyData.categories.find(c => c.id === 'other') || familyData.categories[0];
+      familyData.transactions.forEach(t => { if (t.categoryId === id) t.categoryId = fallback.id; });
+      familyData.recurring.forEach(r => { if (r.categoryId === id) r.categoryId = fallback.id; });
+
+      familyData.categories = familyData.categories.filter(c => c.id !== id);
+      addActivity(`${currentUser.name} removed a category`);
+      saveToStorage();
+      renderAll();
+      showToast('Category removed');
+    }
+
+    function renderRecurringList() {
+      const container = document.getElementById('recurringList');
+
+      if (!familyData.recurring || familyData.recurring.length === 0) {
+        container.innerHTML = '<p class="text-gray-500 text-center py-3">No recurring transactions yet.</p>';
+        return;
+      }
+
+      const rows = [...familyData.recurring].sort((a, b) => new Date(a.nextDate) - new Date(b.nextDate));
+      container.innerHTML = rows.map(r => {
+        const member = familyData.members.find(m => m.id === r.memberId);
+        return `
+          <div class="bg-gray-50 rounded-xl p-3 flex items-center justify-between">
+            <div>
+              <div class="font-semibold text-gray-800">${r.description}</div>
+              <div class="text-sm text-gray-500">
+                ${r.type.toUpperCase()} • $${r.amount.toFixed(2)} • ${categoryName(r.categoryId)} • ${member ? member.name : 'Member'}
+              </div>
+              <div class="text-xs text-gray-400">Next: ${formatDateShort(r.nextDate)}</div>
+            </div>
+            <button class="text-gray-400 hover:text-red-500" title="Remove" onclick="removeRecurring(${r.id})">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+              </svg>
+            </button>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function removeRecurring(id) {
+      familyData.recurring = familyData.recurring.filter(r => r.id !== id);
+      addActivity(`${currentUser.name} removed a recurring transaction`);
+      saveToStorage();
+      renderAll();
+      showToast('Recurring removed');
+    }
+
+    // Auto-add recurring transactions when due (monthly)
+    function processRecurring() {
+      const today = new Date();
+      today.setHours(12, 0, 0, 0);
+
+      let addedCount = 0;
+
+      for (const r of familyData.recurring) {
+        // Catch up: add every month that is due
+        while (new Date(r.nextDate) <= today) {
+          const tx = {
+            id: Date.now() + Math.floor(Math.random() * 100000),
+            type: r.type,
+            amount: r.amount,
+            categoryId: r.categoryId,
+            description: r.description,
+            memberId: r.memberId,
+            date: new Date(r.nextDate).toISOString()
+          };
+
+          familyData.transactions.push(tx);
+          addedCount++;
+
+          const member = familyData.members.find(m => m.id === r.memberId);
+          addActivity(`${member ? member.name : 'Someone'} auto-added recurring ${r.type}: $${r.amount.toFixed(2)} - ${r.description} (${formatDateShort(tx.date)})`);
+
+          // advance nextDate by 1 month keeping day-of-month
+          const next = monthAddKeepDay(new Date(r.nextDate), r.dayOfMonth);
+          r.nextDate = next.toISOString();
+        }
+      }
+
+      if (addedCount > 0) {
+        saveToStorage();
+        showToast(`Added ${addedCount} recurring transaction${addedCount === 1 ? '' : 's'}`);
+      }
+    }
+
+    function escapeHtml(str) {
+      return String(str ?? '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;');
+    }
+
+    // -------------------------
+    // Modals
+    // -------------------------
+    function openGoalModal() {
+      document.getElementById('goalModal').classList.remove('hidden');
+      document.getElementById('goalModal').classList.add('flex');
+    }
+
+    function closeGoalModal() {
+      document.getElementById('goalModal').classList.add('hidden');
+      document.getElementById('goalModal').classList.remove('flex');
+      document.getElementById('goalForm').reset();
+    }
+
+    function openContributeModal(goalId) {
+      document.getElementById('contributeGoalId').value = goalId;
+      document.getElementById('contributeModal').classList.remove('hidden');
+      document.getElementById('contributeModal').classList.add('flex');
+    }
+
+    function closeContributeModal() {
+      document.getElementById('contributeModal').classList.add('hidden');
+      document.getElementById('contributeModal').classList.remove('flex');
+      document.getElementById('contributeForm').reset();
+    }
+
+    // -------------------------
+    // Render all
+    // -------------------------
+    function renderAll() {
+      updateCurrentUser();
+      renderFamilyMembers();
+      populateFilterDropdown();
+      populateCategoryDropdown();
+
+      renderTransactions();
+      renderGoals();
+      renderActivityFeed();
+      updateStats();
+      renderCategoryBreakdown();
+
+      renderMembersEditor();
+      renderCategoriesEditor();
+      renderRecurringList();
+    }
+
+    // -------------------------
+    // Event listeners
+    // -------------------------
+    document.getElementById('transactionForm').addEventListener('submit', function (e) {
+      e.preventDefault();
+
+      const type = document.getElementById('transactionType').value;
+      const amount = parseFloat(document.getElementById('transactionAmount').value);
+      const categoryId = document.getElementById('transactionCategory').value;
+      const description = document.getElementById('transactionDescription').value.trim();
+      const dateStr = document.getElementById('transactionDate').value;
+
+      if (!dateStr) {
+        showToast('Please choose a date');
+        return;
+      }
+
+      const txDate = new Date(dateStr);
+      txDate.setHours(12, 0, 0, 0);
+
+      const transaction = {
+        id: Date.now(),
+        type,
+        amount,
+        categoryId,
+        description,
+        memberId: currentUser.id,
+        date: txDate.toISOString()
+      };
+
+      familyData.transactions.push(transaction);
+      addActivity(`${currentUser.name} added ${type}: $${amount.toFixed(2)} - ${description} (${formatDateShort(transaction.date)})`);
+
+      // Recurring?
+      const repeat = document.getElementById('transactionRepeat').checked;
+      if (repeat) {
+        const start = document.getElementById('repeatStartDate').value || dateStr;
+        const startDate = new Date(start);
+        startDate.setHours(12, 0, 0, 0);
+
+        const r = {
+          id: Date.now() + 999,
+          type,
+          amount,
+          categoryId,
+          description,
+          memberId: currentUser.id,
+          dayOfMonth: startDate.getDate(),
+          nextDate: startDate.toISOString()
+        };
+
+        familyData.recurring.push(r);
+        addActivity(`${currentUser.name} set a recurring monthly ${type}: $${amount.toFixed(2)} - ${description}`);
+      }
+
+      saveToStorage();
+      renderAll();
+      this.reset();
+
+      // default date back to today
+      document.getElementById('transactionDate').valueAsDate = new Date();
+
+      // reset repeat UI
+      document.getElementById('transactionRepeat').checked = false;
+      document.getElementById('repeatOptions').classList.add('hidden');
+
+      showToast('Transaction added!');
+    });
+
+    document.getElementById('goalForm').addEventListener('submit', function (e) {
+      e.preventDefault();
+
+      const goal = {
+        id: Date.now(),
+        name: document.getElementById('goalName').value,
+        target: parseFloat(document.getElementById('goalTarget').value),
+        current: 0,
+        icon: document.getElementById('goalIcon').value
+      };
+
+      familyData.goals.push(goal);
+      addActivity(`${currentUser.name} created new goal: ${goal.name}`);
+      saveToStorage();
+      closeGoalModal();
+      renderAll();
+      showToast('Goal created!');
+    });
+
+    document.getElementById('contributeForm').addEventListener('submit', function (e) {
+      e.preventDefault();
+
+      const goalId = parseInt(document.getElementById('contributeGoalId').value);
+      const amount = parseFloat(document.getElementById('contributeAmount').value);
+
+      const goal = familyData.goals.find(g => g.id === goalId);
+      if (!goal) return;
+
+      goal.current = Math.min(goal.current + amount, goal.target);
+      addActivity(`${currentUser.name} contributed $${amount.toFixed(2)} to ${goal.name}`);
+      saveToStorage();
+      closeContributeModal();
+      renderAll();
+
+      if (goal.current >= goal.target) showToast(`🎉 Goal "${goal.name}" completed!`);
+      else showToast(`Contributed $${amount.toFixed(2)} to ${goal.name}`);
+    });
+
+    document.getElementById('transactionFilter').addEventListener('change', renderTransactions);
+
+    document.getElementById('goalModal').addEventListener('click', function (e) {
+      if (e.target === this) closeGoalModal();
+    });
+
+    document.getElementById('contributeModal').addEventListener('click', function (e) {
+      if (e.target === this) closeContributeModal();
+    });
+
+    document.getElementById('addMemberBtn').addEventListener('click', addMember);
+    document.getElementById('addCategoryBtn').addEventListener('click', addCategory);
+
+    document.getElementById('transactionRepeat').addEventListener('change', function () {
+      const opts = document.getElementById('repeatOptions');
+      if (this.checked) {
+        // Default repeat start to transaction date (or today)
+        const tx = document.getElementById('transactionDate').value;
+        document.getElementById('repeatStartDate').value = tx || new Date().toISOString().slice(0,10);
+        opts.classList.remove('hidden');
+      } else {
+        opts.classList.add('hidden');
+      }
+    });
+
+    // Simulate live status pulse
+    setInterval(() => {
+      document.querySelector('.pulse-dot').style.backgroundColor =
+        Math.random() > 0.5 ? '#4ade80' : '#22c55e';
+    }, 2000);
+
+    // -------------------------
+    // Init
+    // -------------------------
+    function init() {
+      loadFromStorage();
+
+      // default date input to today
+      const dateEl = document.getElementById('transactionDate');
+      dateEl.valueAsDate = new Date();
+
+      processRecurring(); // auto-add any due recurring items
+      renderAll();
+    }
+
+    init();
+  </script>
+</body>
+</html>
